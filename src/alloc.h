@@ -9,6 +9,13 @@ typedef struct Block{
     struct Block *next; // next block in list
 } Block;
 
+typedef enum {
+    FIRST_FIT,
+    BEST_FIT
+} Strategy;
+
+void set_strategy(Strategy s);
+
 void *my_malloc(size_t size);
 void my_free(void *ptr);
 void my_dump(); // print the heap state

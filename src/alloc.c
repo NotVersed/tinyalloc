@@ -6,15 +6,26 @@
 
 static Block *head = NULL;
 
+static Strategy current_strategy = FIRST_FIT;
+
+void set_strategy(Strategy s) { current_strategy = s; }
+
 static Block *find_free_block(size_t size) {
   Block *current = head;
+  Block *best = NULL;
+
   while (current != NULL) {
     if (current->free && current->size >= size) {
-      return current;
+      if (current_strategy == FIRST_FIT) {
+        return current;
+      }
+      if (best == NULL || current->size < best->size) {
+        best = current;
+      }
     }
     current = current->next;
   }
-  return NULL;
+  return best;
 }
 
 static Block *request_space(size_t size) {
@@ -60,6 +71,17 @@ void my_free(void *ptr) {
     return;
   Block *block = (Block *)ptr - 1;
   block->free = 1;
+
+  // coalesce adjacent free blocks
+  Block *current = head;
+  while (current != NULL && current->next != NULL) {
+    if (current->free && current->next->free) {
+      current->size = current->size + BLOCK_SIZE + current->next->size;
+      current->next = current->next->next;
+    } else {
+      current = current->next;
+    }
+  }
 }
 
 void my_dump() {
@@ -67,8 +89,8 @@ void my_dump() {
   Block *current = head;
   int i = 0;
   while (current != NULL) {
-    printf("Block %d: address=%p size=%zu free=%d\n", i, (void *)current,
-           current->size, current->free);
+    printf("Block %d: header=%p data=%p size=%zu free=%d\n", i, (void *)current,
+           (void *)(current + 1), current->size, current->free);
     current = current->next;
     i++;
   }
