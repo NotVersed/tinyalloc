@@ -9,13 +9,7 @@ Implements a free list allocator with first-fit and best-fit strategies, block c
 
 Every allocation consists of a small **block header** followed by the usable memory the caller receives:
 
-low address                                         high address
-┌─────────────────┬──────────────┬─────────────────┬──────────────┐
-│   Block header  │  user data   │   Block header  │  user data   │
-│   (24 bytes)    │  (n bytes)   │   (24 bytes)    │  (n bytes)   │
-└─────────────────┴──────────────┴─────────────────┴──────────────┘
-^                                ^
-head                             head->next
+`my_malloc` returns a pointer to the **user data** portion, never the header. `my_free` walks back 24 bytes from that pointer to find the header and mark it available.
 
 The header stores three fields:
 
